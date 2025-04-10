@@ -695,7 +695,7 @@
   {
     "question": "While driving you se a small (1 foot square) cardboard box ahead in your lane. You should:",
     "options": ["Steer around it without making a sudden or unsafe move", "Brake hard to avoid hitting it.", "Hit it with your vehicle to knock it off the road"],
-    "answer": 0
+    "answer": 1
   }
 
 ]
