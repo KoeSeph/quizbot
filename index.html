@@ -124,16 +124,26 @@
     <button class="lang-button" onclick="setLanguage('english')">English</button>
     <button class="lang-button" onclick="setLanguage('spanish')">Español</button>
   </div>
-
+  <div id="mode-selector" style="margin-bottom: 20px;">
+    <label><input type="radio" name="mode" value="Practice" checked> Practice Mode</label>
+    <label><input type="radio" name="mode" value="Test"> Test Mode</label>
+  </div>
+  
   <select id="quiz-select">
     <option disabled selected>Select a quiz...</option>
   </select>
 
   <div id="quiz-container" style="display:none">
     <div id="progress-container"><div id="progress-bar"></div></div>
+    <div id="wrong-counter" style="margin-bottom: 10px; font-weight: bold;"></div>
     <div class="question" id="question"></div>
     <div id="options"></div>
     <div id="score"></div>
+    <div id="percentage"></div>
+    <button id="retry-button" style="display: none; margin-top: 20px; padding: 10px 20px; background-color: #2b6cb0; color: white; border: none; border-radius: 6px; cursor: pointer;">
+      Try Again
+    </button>
+    
   </div>
 
   <script>
@@ -144,6 +154,8 @@
     let completedQuizzes = [];
     let currentQuizName = '';
     let currentLang = 'english';
+    let mode = "Practice";
+
 
     const quizzes = {
       english: ["PracticeTestC-2.json", "PracticeTestB-1.json", "PracticeTestB-2.json", "PracticeTestB-3.json", "PracticeTestA-2.json", "PracticeTestA-3.json", "random"],
@@ -154,6 +166,7 @@
     const optionsEl = document.getElementById('options');
     const scoreEl = document.getElementById('score');
     const quizContainer = document.getElementById('quiz-container');
+    const retryBtn = document.getElementById("retry-button");
     const quizSelect = document.getElementById('quiz-select');
     const progressBar = document.getElementById('progress-bar');
 
@@ -166,6 +179,14 @@
         option.textContent = file.replace('.json', '');
         quizSelect.appendChild(option);
       });
+    }
+    function updateWrongCounter() {
+      const wrongEl = document.getElementById("wrong-counter");
+      if (mode === "Test") {
+      wrongEl.textContent = `❌ Wrong Answers: ${missedQuestions.length}`;
+      } else {
+        wrongEl.textContent = ""; // hide in Practice Mode
+      }
     }
 
     quizSelect.addEventListener('change', async () => {
@@ -198,6 +219,13 @@
         }
       }
 
+      // Set the selected mode before starting the quiz
+      const selectedMode = document.querySelector('input[name="mode"]:checked');
+      if (selectedMode) {
+      mode = selectedMode.value;
+      }
+
+
       current = 0;
       score = 0;
       missedQuestions = [];
@@ -216,26 +244,32 @@
 
     function showQuestion() {
       updateProgress();
+      updateWrongCounter();
       if (current >= questions.length) {
         questionEl.textContent = "Quiz complete!";
         optionsEl.innerHTML = "";
-        scoreEl.innerHTML = `You scored ${score} out of ${questions.length}`;
-        if (!completedQuizzes.includes(currentQuizName)) {
-          completedQuizzes.push(currentQuizName);
-        }
-        if (missedQuestions.length > 0) {
-          let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
-          missedQuestions.forEach(m => {
-            reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
-          });
-          reviewHTML += '</ul>';
-          scoreEl.innerHTML += reviewHTML;
-        } else {
-          scoreEl.innerHTML += `<br><strong>Perfect score! 🎉</strong>`;
-        }
-        scoreEl.innerHTML += `<hr><strong>Completed quizzes this session:</strong><br>${completedQuizzes.map(name => name.replace('.json', '')).join(', ')}`;
-        return;
+
+        const percentage = Math.round((score / questions.length) * 100);
+      scoreEl.innerHTML = `You scored ${score} out of ${questions.length} <br><strong>That's ${percentage}% correct!</strong><br><br>`;
+
+      if (!completedQuizzes.includes(currentQuizName)) {
+        completedQuizzes.push(currentQuizName);
       }
+      if (missedQuestions.length > 0) {
+        let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
+        missedQuestions.forEach(m => {
+      reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
+      });
+      reviewHTML += '</ul>';
+      scoreEl.innerHTML += reviewHTML;
+      } else {
+      scoreEl.innerHTML += `<br><strong>Perfect score! 🎉</strong>`;
+      }
+
+      scoreEl.innerHTML += `<hr><strong>Completed quizzes this session:</strong><br>${completedQuizzes.map(name => name.replace('.json', '')).join(', ')}`;
+    return;
+  }
+
 
       const q = questions[current];
       questionEl.textContent = q.question;
@@ -246,11 +280,57 @@
         btn.textContent = opt;
         btn.className = 'option';
         btn.onclick = () => {
-          if (idx === q.answer) score++;
-          else missedQuestions.push({ question: q.question, yourAnswer: q.options[idx], correctAnswer: q.options[q.answer] });
-          current++;
+          if (idx === q.answer) {
+            score++;
+          } else {
+            missedQuestions.push({
+            question: q.question,
+            yourAnswer: q.options[idx],
+            correctAnswer: q.options[q.answer]
+        });
+        updateWrongCounter();
+
+        // --- AUTO-FAIL LOGIC ---
+        if (mode === "Test") {
+          const failRate = missedQuestions.length / questions.length;
+        if (failRate > 0.2) {
+          questionEl.textContent = "❌ You have missed more than 20% of the questions. Test failed.";
+          optionsEl.innerHTML = "";
+          const percentage = Math.round((score / questions.length) * 100);
+          scoreEl.innerHTML = `Final score: ${score} out of ${questions.length} <br><strong>${percentage}%</strong>`;
+          retryBtn.style.display = 'inline-block';
+          retryBtn.onclick = () => {
+          // Reset everything
+          current = 0;
+          score = 0;
+          missedQuestions = [];
+          scoreEl.textContent = "";
+          questionEl.textContent = "";
+          optionsEl.innerHTML = "";
+          retryBtn.style.display = 'none';
+          updateProgress();
           showQuestion();
         };
+
+        if (missedQuestions.length > 0) {
+          let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
+          missedQuestions.forEach(m => {
+            reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
+          });
+          reviewHTML += '</ul>';
+          scoreEl.innerHTML += reviewHTML;
+        }
+
+        return; // ❗ Prevent quiz from continuing
+      }
+    }
+    // --- END AUTO-FAIL CHECK ---
+  }
+
+  current++;
+  showQuestion();
+};
+
         optionsEl.appendChild(btn);
       });
     }
