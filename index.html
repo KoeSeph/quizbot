@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #fc221c, #fc221c);
+      background: linear-gradient(135deg, #f0f4f8, #f0f4f8);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -16,22 +16,26 @@
       color: #333;
     }
     .lang-buttons {
-      margin-bottom: 10px;
+      text-align: center;
+      margin-bottom: 20px;
     }
+
     .lang-button {
-      padding: 8px 16px;
-      margin: 0 5px 10px 5px;
-      background-color: #2b6cb0;
+      background-color: #005596;
       color: white;
       border: none;
-      border-radius: 8px;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 1rem;
     }
+
     .lang-button:hover {
-      background-color: #2c5282;
+      background-color: #003d73;
     }
     #quiz-container {
-      background: #ffffff;
+      background: #e82828;
       padding: 20px;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.1);
@@ -46,7 +50,7 @@
     }
     .option {
       display: block;
-      background: #e0f2ff;
+      background: #bbd3eb;
       border: 2px solid #90cdf4;
       border-radius: 8px;
       padding: 12px;
@@ -66,13 +70,22 @@
       font-size: 16px;
     }
     #quiz-select {
-      margin-bottom: 20px;
-      font-size: 16px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      display: block;
       width: 100%;
-      max-width: 500px;
+      max-width: 400px;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #quiz-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
     }
     h3 {
       color: #2b6cb0;
@@ -97,19 +110,88 @@
       margin: 20px 0;
     }
     #progress-container {
-      width: 100%;
-      height: 10px;
-      background-color: #e2e8f0;
-      border-radius: 5px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      height: 12px;
+      margin-bottom: 15px;
       overflow: hidden;
-      margin-top: 10px;
-      margin-bottom: 20px;
     }
     #progress-bar {
+      background-color: #005596;
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #63b3ed, #4299e1);
-      transition: width 0.4s ease-in-out;
+    }
+    #options button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #a91414;
+      border-radius: 6px;
+      color: #333;
+      background-color: #ece6e6;
+      cursor: pointer;
+    }
+
+    #options button:hover {
+      background-color: #e8e8e8;
+    }
+
+    #score, #percentage {
+      font-size: 1.1rem;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    #retry-button {
+      background-color: #A21E2B;
+    }
+
+    #retry-button:hover {
+      background-color: #7e151f;
+    }
+    .step {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+    max-width: 500px;
+    margin: 20px auto;
+    }
+
+    .step.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    }
+
+    .step input,
+    .step select,
+    .step button {
+    margin-top: 10px;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    }
+
+    .step button {
+    background-color: #005596;
+    color: white;
+    border: none;
+    cursor: pointer;
+    }
+
+    .step button:hover {
+    background-color: #003d73;
+    }
+    #wrong-counter {
+      color: #A21E2B;
+      text-align: center;
     }
     @media (max-width: 480px) {
       .question { font-size: 16px; }
@@ -120,30 +202,48 @@
   </style>
 </head>
 <body>
-  <div class="lang-buttons">
-    <button class="lang-button" onclick="setLanguage('english')">English</button>
-    <button class="lang-button" onclick="setLanguage('spanish')">Español</button>
+  <!-- Step 1: PIN Entry -->
+  <div class="step active" id="step-1">
+    <h3>Ingresa tu PIN</h3>
+    <input type="password" id="pin-input" placeholder="Ej. 1234">
+    <button onclick="verifyPin()">Continuar</button>
   </div>
-  <div id="mode-selector" style="margin-bottom: 20px;">
-    <label><input type="radio" name="mode" value="Practice" checked> Practice Mode</label>
-    <label><input type="radio" name="mode" value="Test"> Test Mode</label>
-  </div>
-  
-  <select id="quiz-select">
-    <option disabled selected>Select a quiz...</option>
-  </select>
 
-  <div id="quiz-container" style="display:none">
+  <!-- Step 2: Language -->
+  <div class="step" id="step-2">
+    <h3>Selecciona tu idioma</h3>
+    <button class="lang-button" onclick="setLanguage('english'); nextStep()">English</button>
+    <button class="lang-button" onclick="setLanguage('spanish'); nextStep()">Español</button>
+  </div>
+
+  <!-- Step 3: Mode -->
+  <div class="step" id="step-3">
+    <h3>Selecciona el modo</h3>
+    <label><input type="radio" name="mode" value="Practice" checked> Modo de Práctica</label>
+    <label><input type="radio" name="mode" value="Test"> Modo de Prueba</label>
+    <button onclick="nextStep()">Continuar</button>
+  </div>
+
+  <!-- Step 4: Quiz Selection -->
+  <div class="step" id="step-4">
+    <h3>Selecciona una prueba</h3>
+    <select id="quiz-select">
+      <option disabled selected>Selecciona una prueba...</option>
+      <!-- Options added dynamically -->
+    </select>
+    <button onclick="startQuiz()">Iniciar</button>
+  </div>
+
+  <!-- Step 5: Quiz Container -->
+  <div id="quiz-container" class="step">
     <div id="progress-container"><div id="progress-bar"></div></div>
-    <div id="wrong-counter" style="margin-bottom: 10px; font-weight: bold;"></div>
+    <div id="wrong-counter"></div>
     <div class="question" id="question"></div>
     <div id="options"></div>
     <div id="score"></div>
     <div id="percentage"></div>
-    <button id="retry-button" style="display: none; margin-top: 20px; padding: 10px 20px; background-color: #2b6cb0; color: white; border: none; border-radius: 6px; cursor: pointer;">
-      Try Again
-    </button>
-    
+    <button id="back-button" style="display: none; margin-top: 10px;">Back to Quiz Selection</button>
+    <button id="retry-button" style="display: none;">Try Again</button>
   </div>
 
   <script>
@@ -156,6 +256,33 @@
     let currentLang = 'english';
     let mode = "Practice";
 
+    const correctPIN = "1234";
+    let currentStep = 1;
+
+    function verifyPin() {
+      const input = document.getElementById("pin-input").value;
+      if (input === correctPIN) {
+        nextStep();
+      } else {
+        alert("PIN incorrecto. Inténtalo de nuevo.");
+      }
+    }
+
+    function nextStep() {
+      document.getElementById(`step-${currentStep}`).classList.remove("active");
+      currentStep++;
+      document.getElementById(`step-${currentStep}`).classList.add("active");
+    }
+
+    function startQuiz() {
+      // Set mode from radio buttons
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      setMode(mode); // call your existing function
+      document.getElementById("quiz-container").style.display = "block";
+      document.getElementById("step-4").classList.remove("active");
+      document.getElementById("quiz-container").classList.add("active");
+      loadSelectedQuiz(); // assumes you're already handling quiz start logic
+    }
 
     const quizzes = {
       english: ["PracticeTestC-2.json", "PracticeTestB-1.json", "PracticeTestB-2.json", "PracticeTestB-3.json", "PracticeTestA-2.json", "PracticeTestA-3.json", "random"],
@@ -169,11 +296,45 @@
     const retryBtn = document.getElementById("retry-button");
     const quizSelect = document.getElementById('quiz-select');
     const progressBar = document.getElementById('progress-bar');
+    const backBtn = document.getElementById("back-button");
 
-    function setLanguage(lang) {
-      currentLang = lang;
-      quizSelect.innerHTML = '<option disabled selected>Select a quiz...</option>';
-      quizzes[lang].forEach(file => {
+
+    let quizMode = "Practice"; // Default value
+
+    function setMode(mode) {
+    quizMode = mode;
+    console.log("Mode set to:", quizMode); // optional for debugging
+    }
+
+    function verifyPin() {
+    const input = document.getElementById("pin-input").value;
+    if (input === correctPIN) {
+      nextStep();
+    } else {
+      alert("PIN incorrecto. Inténtalo de nuevo.");
+    }
+    }
+
+    function nextStep() {
+      document.getElementById(`step-${currentStep}`).classList.remove("active");
+      currentStep++;
+      document.getElementById(`step-${currentStep}`).classList.add("active");
+    }
+
+    function startQuiz() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      setMode(mode); // ✅ Now this exists
+      document.getElementById("quiz-container").style.display = "block";
+      document.getElementById("step-4").classList.remove("active");
+      document.getElementById("quiz-container").classList.add("active");
+
+      loadSelectedQuiz(); // ← this should be part of your quiz bot logic
+    }
+
+      function setLanguage(lang) {
+        currentLang = lang;
+        quizSelect.innerHTML = '<option disabled selected>Select a quiz...</option>';
+        quizzes[lang].forEach(file => {
         const option = document.createElement('option');
         option.value = file;
         option.textContent = file.replace('.json', '');
@@ -246,30 +407,70 @@
       updateProgress();
       updateWrongCounter();
       if (current >= questions.length) {
+        
         questionEl.textContent = "Quiz complete!";
         optionsEl.innerHTML = "";
 
         const percentage = Math.round((score / questions.length) * 100);
-      scoreEl.innerHTML = `You scored ${score} out of ${questions.length} <br><strong>That's ${percentage}% correct!</strong><br><br>`;
+        scoreEl.innerHTML = `You scored ${score} out of ${questions.length} <br><strong>That's ${percentage}% correct!</strong><br><br>`;
+        
+        if (!completedQuizzes.includes(currentQuizName)) {
+          completedQuizzes.push(currentQuizName);
+        }
+        if (missedQuestions.length > 0) {
+          let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
+          missedQuestions.forEach(m => {
+            reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
+          });
+          reviewHTML += '</ul>';
+          scoreEl.innerHTML += reviewHTML;
+        } else {
+          scoreEl.innerHTML += `<br><strong>Perfect score! 🎉</strong>`;
+        }
 
-      if (!completedQuizzes.includes(currentQuizName)) {
-        completedQuizzes.push(currentQuizName);
+        scoreEl.innerHTML += `<hr><strong>Completed quizzes this session:</strong><br>${completedQuizzes.map(name => name.replace('.json', '')).join(', ')}`;
+
+        // ✅ FIX: Show retry button in Practice mode too
+        if (quizMode === "Practice" || quizMode === "Test") {
+          backBtn.style.display = 'inline-block';
+          retryBtn.style.display = 'inline-block';
+          retryBtn.onclick = () => {
+            current = 0;
+            score = 0;
+            missedQuestions = [];
+            scoreEl.textContent = "";
+            questionEl.textContent = "";
+            optionsEl.innerHTML = "";
+            retryBtn.style.display = 'none';
+            updateProgress();
+            showQuestion();
+          };
+          backBtn.onclick = () => {
+            // Reset quiz state
+            current = 0;
+            score = 0;
+            missedQuestions = [];
+            scoreEl.textContent = "";
+            questionEl.textContent = "";
+            optionsEl.innerHTML = "";
+
+            // Hide quiz view
+            quizContainer.classList.remove("active");
+            quizContainer.style.display = "none";
+
+            // Show quiz selection again
+            currentStep = 4;
+            document.getElementById("step-4").classList.add("active");
+
+            // Hide buttons
+            retryBtn.style.display = "none";
+            backBtn.style.display = "none";
+        };
+        
       }
-      if (missedQuestions.length > 0) {
-        let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
-        missedQuestions.forEach(m => {
-      reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
-      });
-      reviewHTML += '</ul>';
-      scoreEl.innerHTML += reviewHTML;
-      } else {
-      scoreEl.innerHTML += `<br><strong>Perfect score! 🎉</strong>`;
+
+        return;
       }
-
-      scoreEl.innerHTML += `<hr><strong>Completed quizzes this session:</strong><br>${completedQuizzes.map(name => name.replace('.json', '')).join(', ')}`;
-    return;
-  }
-
 
       const q = questions[current];
       questionEl.textContent = q.question;
@@ -284,56 +485,28 @@
             score++;
           } else {
             missedQuestions.push({
-            question: q.question,
-            yourAnswer: q.options[idx],
-            correctAnswer: q.options[q.answer]
-        });
-        updateWrongCounter();
-
-        // --- AUTO-FAIL LOGIC ---
-        if (mode === "Test") {
-          const failRate = missedQuestions.length / questions.length;
-        if (failRate > 0.2) {
-          questionEl.textContent = "❌ You have missed more than 20% of the questions. Test failed.";
-          optionsEl.innerHTML = "";
-          const percentage = Math.round((score / questions.length) * 100);
-          scoreEl.innerHTML = `Final score: ${score} out of ${questions.length} <br><strong>${percentage}%</strong>`;
-          retryBtn.style.display = 'inline-block';
-          retryBtn.onclick = () => {
-          // Reset everything
-          current = 0;
-          score = 0;
-          missedQuestions = [];
-          scoreEl.textContent = "";
-          questionEl.textContent = "";
-          optionsEl.innerHTML = "";
-          retryBtn.style.display = 'none';
-          updateProgress();
+              question: q.question,
+              yourAnswer: q.options[idx],
+              correctAnswer: q.options[q.answer]
+            });
+            updateWrongCounter();
+            const failRate = missedQuestions.length / questions.length;
+            if (mode === "Test" && failRate > 0.2) {
+              questionEl.textContent = "❌ You have missed more than 20% of the questions. Test failed.";
+              optionsEl.innerHTML = "";
+              const percentage = Math.round((score / questions.length) * 100);
+              scoreEl.innerHTML = `Final score: ${score} out of ${questions.length} <br><strong>${percentage}%</strong>`;
+              retryBtn.style.display = 'inline-block';
+              return;
+            }
+          }
+          current++;
           showQuestion();
         };
-
-        if (missedQuestions.length > 0) {
-          let reviewHTML = '<h3>Review Missed Questions:</h3><ul>';
-          missedQuestions.forEach(m => {
-            reviewHTML += `<li><strong>Q:</strong> ${m.question}<br><strong>Your answer:</strong> ${m.yourAnswer}<br><strong>Correct answer:</strong> ${m.correctAnswer}</li>`;
-          });
-          reviewHTML += '</ul>';
-          scoreEl.innerHTML += reviewHTML;
-        }
-
-        return; // ❗ Prevent quiz from continuing
-      }
-    }
-    // --- END AUTO-FAIL CHECK ---
-  }
-
-  current++;
-  showQuestion();
-};
-
         optionsEl.appendChild(btn);
       });
     }
+
 
     setLanguage('english');
   </script>
